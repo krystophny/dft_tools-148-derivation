@@ -103,10 +103,20 @@ result **unchanged** (drift still 1.3e-7). The two signs are equally valid
 representations differing by a phase that cancels in `D M D^dag`.
 
 So on real cubic multi-equivalent-atom SOC + spin-polarized data, the current
-dmftproj symmetrization is correct and the proposed flip is physically inert. The
-reported failure does not reproduce; it may be specific to Wien2k 18.2, or to the
-`fromfile` (spin-mixing) basis path that the reporter said the flip does not fix
-and which is not tested here.
+dmftproj symmetrization is correct and the proposed flip is physically inert.
+
+The `fromfile` (spin-mixing) path was tested too, by re-running CaOs2 in the d
+j-basis (`ifmixing` true). It also shows no drift (7.8e-7), and the proposed flip
+produces a **byte-identical** `case.symqmc`. That is the explanation for the
+reporter's note that the flip "does nothing for the fromfile case": the mixing
+path writes `srot%rotrep` (built by `spinrotmat`, which equals the reference
+`spmt`) directly, with no `ephase`, so the four-site `ephase` flip cannot affect
+it. fromfile is not broken; the flip simply lives in a code path it does not use.
+
+Every path is therefore accounted for. The reported failure does not reproduce on
+any of them with current dft_tools; if it is real it would be specific to Wien2k
+18.2's symmetry generation, which we could not check (that source is not
+available to us).
 
 One structural observation for maintainers: the internal symmetrizer
 `symmetrize_mat.f:99-110,231-242` puts the spin phase on the off-diagonal
