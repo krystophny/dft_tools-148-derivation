@@ -81,18 +81,32 @@ single atom.
 
 ## Conclusion
 
-The #148 failure is real (two independent empirical reports) but is NOT a
-universal sign error in the single-atom spinor matrices: those are already a valid
-representation for both sign conventions, so the proposed four-site flip is a
-no-op on every case reproducible in isolation. The failure must arise from the
-multi-atom symmetry mapping (`jorb = R[isym](iorb)`, atoms permuted by the
-operation) or the projector/local-Hamiltonian construction, neither of which a
-single-atom test reproduces.
+The single-atom spinor matrices are a valid representation for both sign
+conventions, so the proposed four-site flip is a no-op on every case reproducible
+in isolation.
 
-A failing-before / passing-after reproducer, and therefore validation of any fix,
-requires a real SOC + spin-polarized Wien2k case (Sr2MgOsO6 is canonical) on the
-full BZ. No public dataset ships the needed symmetry/projector files; only
-`*.struct` + `*_SOC.indmftpr` are checked in.
+This was then checked against full Wien2k calculations (Wien2k 14.2, full BZ,
+SOC + spin-polarized, the reporter's no-op symmetrization test):
+
+| case | symmetry | corr. atoms | time_inv ops | eigenvalue drift |
+|------|----------|-------------|--------------|------------------|
+| Sr2MgOsO6 | tetragonal | 1 | 0 | 4.5e-7 |
+| CaOs2 (fluorite) | cubic | 2 (equivalent) | 8 | 1.3e-7 |
+
+CaOs2 has every condition the bug should need: cubic symmetry, two
+symmetry-equivalent correlated atoms (the inter-atomic mapping
+`jorb = R[isym](iorb)`), eight time-reversal operations, and the non-mixing
+export path. It still symmetrizes correctly. The decisive test: rebuilding
+dmftproj with the proposed `factor -> -factor` flip and re-running on the same
+data **changes** `case.symqmc` (the matrices differ) but leaves the symmetrization
+result **unchanged** (drift still 1.3e-7). The two signs are equally valid
+representations differing by a phase that cancels in `D M D^dag`.
+
+So on real cubic multi-equivalent-atom SOC + spin-polarized data, the current
+dmftproj symmetrization is correct and the proposed flip is physically inert. The
+reported failure does not reproduce; it may be specific to Wien2k 18.2, or to the
+`fromfile` (spin-mixing) basis path that the reporter said the flip does not fix
+and which is not tested here.
 
 One structural observation for maintainers: the internal symmetrizer
 `symmetrize_mat.f:99-110,231-242` puts the spin phase on the off-diagonal
