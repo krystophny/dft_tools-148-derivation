@@ -6,7 +6,8 @@ with a no-Wien2k reproducer, written to investigate
 [issue #148](https://github.com/TRIQS/dft_tools/issues/148) (wrong symmetries
 for spin-orbit + spin-polarized calculations).
 
-Companion regression test: [TRIQS/dft_tools#292](https://github.com/TRIQS/dft_tools/pull/292).
+Companion regression test: [TRIQS/dftkit#4](https://github.com/TRIQS/dftkit/pull/4),
+where `dmftproj` now lives.
 
 The Mathematica scripts under `derivation/` reproduce every claim below; run them
 with `wolfram -script derivation/<name>.wl`.
